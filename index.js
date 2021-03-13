@@ -1,8 +1,11 @@
 const express = require('express'); // returns functions
-
+const Joi = require('joi');
 const app = express(); // represents app created from functions
                        // can access endpoints like this
                         // get takes url
+
+app.use(express.json()); // middleware for request processing pipeline
+
 const courses = [
     {id: 1, name:'course1'},
     {id: 2, name:'course2'},
@@ -28,6 +31,21 @@ app.get('/api/courses/:id', (req, res) => {
     else{
         res.send(course);
     }
+});
+
+app.post('/api/courses', (req, res) => {
+    if (!req.body.name || req.body.name.length < 3){
+        // 400 bad request
+        res.status(400).send('Name is required and needs to have a length of 300');
+        return;
+    }
+    const course = {
+        id: courses.length + 1,
+        name: req.body.name   // assuming that object to be posted has a name 
+    };
+    courses.push(course);
+    res.send(course); // returning posted object client who post requested 
+
 });
 
 // port must be hosted dynamically -> port 3000 may not be available
