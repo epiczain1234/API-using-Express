@@ -34,9 +34,11 @@ app.get('/api/courses/:id', (req, res) => {
 });
 
 app.post('/api/courses', (req, res) => {
-    if (!req.body.name || req.body.name.length < 3){
+    const { error } = validateCourse(req.body); // object destructuring for error property 
+    // if Invalid send 400 bad request
+    if (error){
         // 400 bad request
-        res.status(400).send('Name is required and needs to have a length of 300');
+        res.status(400).send(error.details[0].message);
         return;
     }
     const course = {
@@ -48,6 +50,35 @@ app.post('/api/courses', (req, res) => {
 
 });
 
+app.put('/api/courses/:id', (req,res) => {
+    // Look up course
+
+    // if DNE -> 404
+    const course = courses.find(c => c.id == parseInt(req.params.id));
+    
+    if (!course){
+        res.status(404).send('Course with given ID was not found ')
+    }
+    // Validate course
+  
+    const { error } = validateCourse(req.body); // object destructuring for error property 
+    // if Invalid send 400 bad request
+    if (error){
+        // 400 bad request
+        res.status(400).send(error.details[0].message);
+        return;
+    }
+    course.name = req.body.name;
+    res.send(course);
+});
+
+function validateCourse(course){
+    const schema = {
+        name: Joi.string().min(3).required()
+    };
+
+    return Joi.validate(course, schema);
+}
 // port must be hosted dynamically -> port 3000 may not be available
 // can use export command to set custom env variable
 const port = process.env.PORT || 3000
